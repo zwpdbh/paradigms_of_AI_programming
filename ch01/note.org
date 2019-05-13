@@ -19,7 +19,7 @@
 
 * High-order functions      
   - Define our =mappend=
-    - =mappend=
+    - =mappend= which has the same effect of =mapcan=
       #+begin_src lisp
 	(defun mappend (fn lst)
 	  "Apply fn to each element of list and append the results"
@@ -39,3 +39,18 @@
 
       #+RESULTS:
       | 1 | 2 | 10 | 20 | 300 | 600 |
+
+    - Lambda
+      If we want to refer to a function in a position other than the first element of a function call, we have to use the #' notation. Otherwise, the expressions will be evaluated by the normal evaluation rule, and will not be treated as functions.
+      The importance of lambda is that we could make run-time functions.
+
+      - Ex01
+	#+begin_src lisp
+	  (mapcar #'(lambda (x)
+		      (+ x x))
+		  '(1 2 3 4 5))
+	#+end_src
+
+	#+RESULTS:
+	| 2 | 4 | 6 | 8 | 10 |
+

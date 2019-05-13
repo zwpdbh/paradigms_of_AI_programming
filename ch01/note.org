@@ -1,0 +1,41 @@
+* 1.6 using functions
+  - mapcar
+    - Ex01
+      #+begin_src lisp
+	   (mapcar #'+ '(1 2 3 4) '(10 20 30 40))
+      #+end_src
+
+      #+RESULTS:
+      | 11 | 22 | 33 | 44 |
+
+    - Ex02q
+      #+begin_src lisp
+	(mapcar #'- '(1 2 3 4))
+      #+end_src
+
+      #+RESULTS:
+      | -1 | -2 | -3 | -4 |
+
+
+* High-order functions      
+  - Define our =mappend=
+    - =mappend=
+      #+begin_src lisp
+	(defun mappend (fn lst)
+	  "Apply fn to each element of list and append the results"
+	  (apply #'append (mapcar fn lst)))
+      #+end_src
+
+      #+RESULTS:
+      : MAPPEND
+
+    - Ex01
+      #+begin_src lisp
+	(defun self-and-double (x)
+	  (list x (+ x x)))
+
+	(mappend #'self-and-double '(1 10 300))
+      #+end_src
+
+      #+RESULTS:
+      | 1 | 2 | 10 | 20 | 300 | 600 |

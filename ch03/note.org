@@ -1,0 +1,73 @@
+* Functions and special forms for repetition
+  To explain each possibility we will present versions of the function length, which returns the number of elements in a list. 
+
+  - =dolist=
+    #+begin_src lisp
+      (defun length1 (list)
+	(let ((len 0))
+	  (dolist (element list) (incf len))
+	  len))
+    #+end_src
+
+    #+RESULTS:
+    : LENGTH1
+
+  - =mapc=
+    #+begin_src lisp
+      (defun length2 (list)
+	(let ((len 0))
+	  (mapc #'(lambda (element)
+		    (incf len))
+		list)
+	  len))
+    #+end_src
+
+    #+RESULTS:
+    : LENGTH2
+
+  - =do= 
+    #+begin_src lisp
+      (defun length3 (list)
+	(do ((len 0 (+ len 1))   ; start with LEN=0, increment
+	     (l list (rest l)))  ; ... on each iteration
+	    ((null l) len)))     ; (until the end of the list
+    #+end_src
+
+
+** other
+   - =remove=
+     #+begin_src lisp
+       (remove 1 '(1 2 3 2 1 0 -1) :key #'abs)
+       (remove 1 '(1 2 3 2 1 0 -1) :test #'<)
+     #+end_src
+     
+   - =remove-if=
+     #+begin_src lisp
+       (remove-if #'oddp '(1 2 3 2 1 0 -1))
+       (remove-if-not #'oddp '(1 2 3 2 1 0 -1))
+       (find-if #'evenp '(1 2 3 2 1 0 -1))
+     #+end_src
+     
+
+
+** tail recursion
+   - first, see the normal recursion
+     #+begin_src lisp
+       (defun length9 (list)
+	 (if (null list)
+	     0
+	     (+ 1 (length9 (rest list)))))
+     #+end_src
+
+   - second, the tail recursion version
+     #+begin_src lisp
+       (defun length10 (lst)
+	 (lables
+	  ((length13 (list len-so-far)
+		     (if (null list)
+			 len-so-far
+			 (length13 (rest list) (+ 1 len-so-far)))))
+	  (length13 lst 0)))
+     #+end_src
+
+   - The differences between those two version: In =length10=, there are no pending operations to do after the recursive call returns, so the compiler is free to release any memory allocated for the original call before making the recursive call. length10-aux is called a tail-recursive function, because the recursive call appears as the last thing the function does (the tail). 

@@ -1,0 +1,55 @@
+* 4.1 stage 1: description
+  - The main idea is to solve a problem using a process called means-ends analysis, where the problem is stated in terms of what we want to happen.
+  - It is clear we will need some description of allowable actions, along with their preconditions and effects. 
+
+* 4.2 stage 2: specification
+  - represent the state of the world
+  - define a list of alloable operators
+  - An operator can be represented as a structure composed of an action, a list of preconditions, and a list of effects.
+  - A complete problem is described to GPS in terms of a starting state, a goal state, and a set of known operators.
+  - A single goal condition can be achieved in two ways. If it is already in the current state, the goal is trivially achieved with no effort. Otherwise, we have to find some appropriate operator and try to apply it.
+  - An operator is appropriate if one of the effects of the operator is to add the goal in question to the current state; in other words, if the goal is in the operator's add-list.
+  - We can apply an operator if we can achieve all the preconditions.
+
+
+* 4.3 Stage 3: Implementation
+  #+begin_src lisp
+    ;; helper functions needed
+    (defun complement (fn)
+      "If FN returns y, then (complement FN) returns (not y)."
+      ;; This function is built-in in ANSI Common Lisp,
+      ;; but is defined here for those with non-ANSI compilers.
+      #'(lambda (&rest args) (not (apply fn args))))
+
+    (defun find-all (item sequence &rest keyword-arg &key (test #'eql) test-not &allow-other-keys)
+      "Find all those elements of sequence that match item, according to the keywords. Doesn't alter sequence".
+      (if test-not
+	  (apply #'remove item sequence :test-not (complement test-not) keyword-args)
+	  (apply #'remove item sequence :test (complement test) keyword-args)))
+
+    ;; the current state: a list of conditions
+    (defvar *state* nil)
+
+    ;; a list of available operators
+    (defvar *ops* nil);
+
+    (defstruct op
+      "an operation"
+      (action nil) 
+      (preconds nil)
+      (add-list nil) 
+      (del-list nil))
+
+    (defun GPS (*state* goals *ops*)
+      "General problem solver: achieve all goals using *ops*"
+      (if (every #'achieve goals) 
+	  'solved))
+
+    (defun achieve (goal)
+      "a goal is achieved if it already holds, or if there is an appropriate op for it "
+      (or (member goal *state*)
+	  (some #'apply-op
+		(find-all goal *ops* :test #'appropriate-p))))
+
+  #+end_src
+

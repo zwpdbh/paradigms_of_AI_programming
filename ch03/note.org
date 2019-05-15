@@ -71,3 +71,24 @@
      #+end_src
 
    - The differences between those two version: In =length10=, there are no pending operations to do after the recursive call returns, so the compiler is free to release any memory allocated for the original call before making the recursive call. length10-aux is called a tail-recursive function, because the recursive call appears as the last thing the function does (the tail). 
+
+* 3.15 Evaluation
+  - =funcall=
+  - =apply=
+  - =eval=
+
+
+* 3.16 Closures
+  - An general case, a function that adds c to its argument. Since each all creates a new local variable, each function returned is a unique function.
+  - Example
+    #+begin_src lisp
+      (defun back-account (balance)
+	"Open a bank account starting with the given balance".
+	#'(lambda (action amount)
+	    (case action
+	      (deposit (setf balance (+ balance amount)))
+	      (withdraw (setf balance (- balance amount))))))
+    #+end_src
+
+    #+RESULTS:
+    : BACK-ACCOUNT

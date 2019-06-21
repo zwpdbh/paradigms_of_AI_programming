@@ -92,3 +92,94 @@
 
     #+RESULTS:
     : BACK-ACCOUNT
+* 3.17 Special Variables
+  - lexical variable has lexical scope and indefinite extent
+    - By default, common lisp variables are lexical variables.
+    - They are introduced by some syntactic construct like: let and defun
+  - special variable has indefinite scope and dynamic extent.
+    - (set var value) is used to set the special variable.
+    - There is no corresponding forms for accessing and setting lexical variables.
+
+* 3.18 Multiple Values 
+  - To return multiple values, use values
+    - (values 1 2 3) => 1 2 3
+  - To get at multiple values, you have to use a special form, such as: multiple-value-bind
+    #+begin_src lisp
+      (defun show-both (x)
+	(multiple-value-bind (int rem)
+	    (round x)
+	  (format t "~f = ~d + ~f" x int rem)))
+
+      (show-both 5.1)
+    #+end_src
+
+
+* 3.19 More about Parameters
+  - a simple program that need to be improved. It accept 3 arguments
+    - the first is the operator
+    - the second is the range
+    - the last is the number of iteration
+    #+begin_src lisp
+      (defun math-quiz (op range n)
+	"Ask the user a series of math problems."
+	(dotimes (i n)
+	  (problem (random range) op (random range))))
+
+      (defun problem (x op y)
+	"Ask a math problem, read a reply, and say if it is correct."
+	(format t "~&How much is ~d ~a ~d?" x op y)
+	(if (eql (read) (funcall op x y))
+	    (princ "Correct!")
+	    (princ "Sorry, that's not right.")))
+    #+end_src
+
+    #+RESULTS:
+    : PROBLEM
+
+  - Improve it:
+    - make argument optional and provide their default values
+    - make '+ as default operator, 100 as range and 10 as number of iteration
+      #+begin_src lisp
+	(defun math-quiz (&optional (op '+) (range 100) (n 10))
+	  "Ask the user a series of math problems."
+	  (dotimes (i n)
+	    (problem (random range) op (random range))))
+      #+end_src
+      - Optional parameters are still position-dependent, so if the user is happy with operator and range but want to change the number of iteration. He still need to type in all three arguments.
+
+  - Keyword parameters are position-independent which are useful when there are a number of parameters that normally take default values but occasionally need specific values.
+    #+begin_src lisp
+      (defun math-quiz (&key (op '+) (range 100) (n 10))
+	"Ask the user a series of math problems."
+	(dotimes (i n)
+	  (problem (random range) op (random range))))
+    #+end_src
+    - Now (math-quiz :n 5) and (math-quiz :op '+ :n 5 :range 100) mean the same.
+    - Keyword arguments are specified by the parameter name preceded by a colon, and followed by the value.
+    - The keyword/value pairs can come in any order.
+    - keyword is could be used anywhere, not just in argument lists
+      - keywords are constants, and so cannot be used as names of variables
+
+  - Example, our find-all function will find all the elements in the sequence that match a condition instead of just returning the first matched one
+    - first, find all the complement by our condition
+      #+begin_src lisp
+	(defun complement (fn)
+	  "if fn return y, then (complement fn) returns (not y)"
+	  #'(lambda (&rest args)
+	      (not (apply fn args))))
+      #+end_src
+
+    - second, create our find-all function 
+      #+begin_src lisp
+	(defun find-all (item sequence $&rest keyword-args &key (test #'eql) test-not &allow-other-keys)
+	  "Find all those elements of sequence that match item,
+	  according to the keywords.  Doesn't alter sequence."
+	  (if test-not
+	      (apply #'remove item sequence
+		     :test-not (complement test-not) keyword-args)
+	      (apply #'remove item sequence
+		     :test (complement test) keyword-args)))
+      #+end_src
+      - The &rest accumulates all the keyword/value pairs which will be used in the remove command in the variable keyword-args.
+      - In addition to the &rest parameter, two specific keyword parameters, :test and :test-not, are specified.
+      - Any time you put a &key in a parameter list, you need an '&allow-other-keys', if in fact other keywords are allowed. (Here, we specify two keywords, but also need to pass other keywords which are used by #'remove, such as :start and :key).
